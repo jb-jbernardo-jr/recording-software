@@ -1,6 +1,6 @@
 import pytz
 
-def record(DEFAULT_CAMERA=0, FORMAT = '%Y%m%d%H%M%S', TIMEZONE = pytz.timezone('America/Manaus'), EXTENSION='.avi'):
+def record(DEFAULT_CAMERA=0, FORMAT = '%Y%m%d%H%M%S', TIMEZONE = pytz.timezone('America/Manaus'), EXTENSION='.avi', VIDEOSIZE=900):
     import os, cv2, datetime, time
 
     OUTPUT_FOLDER = os.path.join( os.getcwd(), 'Records' )
@@ -8,8 +8,9 @@ def record(DEFAULT_CAMERA=0, FORMAT = '%Y%m%d%H%M%S', TIMEZONE = pytz.timezone('
         os.makedirs( OUTPUT_FOLDER )
 
     cap = cv2.VideoCapture(DEFAULT_CAMERA)
+    cv2.namedWindow('Recording Software')
 
-    while( True ):
+    while( cv2.getWindowProperty('Recording Software', cv2.WND_PROP_VISIBLE) <= 1 ):
 
         START = time.time()
         END = 0
@@ -19,13 +20,13 @@ def record(DEFAULT_CAMERA=0, FORMAT = '%Y%m%d%H%M%S', TIMEZONE = pytz.timezone('
         OUTPUT_FILE = f'{OUTPUT_FOLDER}/{FILENAME}'
         out = cv2.VideoWriter(OUTPUT_FILE, fourcc, 20.0, (int( cap.get(3) ), int( cap.get(4) )) )
 
-        while( ( (END - START) <= 10 ) or ( cv2.waitKey(1) & 0xFF == ord('q') ) ):
+        while( ( END - START ) <= VIDEOSIZE ):
 
             ret, frame = cap.read()
 
             if(ret): 
 
-                cv2.imshow('Recording Software', frame)
+                # cv2.imshow('Recording Software', frame)
                 
                 out.write(frame)
 
