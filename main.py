@@ -10,33 +10,38 @@ def record(DEFAULT_CAMERA=0, FORMAT = '%Y%m%d%H%M%S', TIMEZONE = pytz.timezone('
     cap = cv2.VideoCapture(DEFAULT_CAMERA)
     cv2.namedWindow('Recording Software')
 
-    while( cv2.getWindowProperty('Recording Software', cv2.WND_PROP_VISIBLE) <= 1 ):
+    START = time.time()
+    END = 0
 
-        START = time.time()
-        END = 0
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    FILENAME = TIMEZONE.localize( datetime.datetime.now() ).strftime(FORMAT) + EXTENSION
+    OUTPUT_FILE = f'{OUTPUT_FOLDER}/{FILENAME}'
+    out = cv2.VideoWriter(OUTPUT_FILE, fourcc, 20.0, (int( cap.get(3) ), int( cap.get(4) )) )
 
-        fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        FILENAME = TIMEZONE.localize( datetime.datetime.now() ).strftime(FORMAT) + EXTENSION
-        OUTPUT_FILE = f'{OUTPUT_FOLDER}/{FILENAME}'
-        out = cv2.VideoWriter(OUTPUT_FILE, fourcc, 20.0, (int( cap.get(3) ), int( cap.get(4) )) )
+    while( True ):
 
-        while( ( END - START ) <= VIDEOSIZE ):
+        ret, frame = cap.read()
 
-            ret, frame = cap.read()
+        if(ret): 
 
-            if(ret): 
+            cv2.imshow('Recording Software', frame)
+            
+            out.write(frame)
 
-                # cv2.imshow('Recording Software', frame)
-                
-                out.write(frame)
+        if ( ( cv2.waitKey(1) & 0xFF == ord('q') ) or ( cv2.getWindowProperty('Recording Software', cv2.WND_PROP_VISIBLE) < 1 ) ):
+            break
 
-            else:
+        END = time.time()
+    
+        if( ( END - START ) >= VIDEOSIZE ):
 
-                break
+            print(f'Vídeo {FILENAME} salvo com sucesso!')
 
-            END = time.time()
-
-        print(f'Vídeo {FILENAME} salvo com sucesso!')
+            START = time.time()
+            END = 0
+            FILENAME = TIMEZONE.localize( datetime.datetime.now() ).strftime(FORMAT) + EXTENSION
+            OUTPUT_FILE = f'{OUTPUT_FOLDER}/{FILENAME}'
+            out = cv2.VideoWriter(OUTPUT_FILE, fourcc, 20.0, (int( cap.get(3) ), int( cap.get(4) )) )
 
     cap.release()
 
