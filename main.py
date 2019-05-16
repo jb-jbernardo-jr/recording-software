@@ -1,7 +1,7 @@
 import pytz
 
 def record(DEFAULT_CAMERA=0, FORMAT = '%Y%m%d%H%M%S', TIMEZONE = pytz.timezone('America/Manaus'), EXTENSION='.avi'):
-    import os, cv2, datetime
+    import os, cv2, datetime, time
 
     OUTPUT_FOLDER = os.path.join( os.getcwd(), 'Records' )
     if( not os.path.exists(OUTPUT_FOLDER) ):
@@ -9,27 +9,33 @@ def record(DEFAULT_CAMERA=0, FORMAT = '%Y%m%d%H%M%S', TIMEZONE = pytz.timezone('
 
     cap = cv2.VideoCapture(DEFAULT_CAMERA)
 
-    fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    FILENAME = TIMEZONE.localize( datetime.datetime.now() ).strftime(FORMAT) + EXTENSION
-    OUTPUT_FILE = f'{OUTPUT_FOLDER}/{FILENAME}'
-    out = cv2.VideoWriter(OUTPUT_FILE, fourcc, 20.0, (int( cap.get(3) ), int( cap.get(4) )) )
+    while( True ):
 
-    while(True):
+        START = time.time()
+        END = 0
 
-        ret, frame = cap.read()
+        fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        FILENAME = TIMEZONE.localize( datetime.datetime.now() ).strftime(FORMAT) + EXTENSION
+        OUTPUT_FILE = f'{OUTPUT_FOLDER}/{FILENAME}'
+        out = cv2.VideoWriter(OUTPUT_FILE, fourcc, 20.0, (int( cap.get(3) ), int( cap.get(4) )) )
 
-        if(ret): 
+        while( ( (END - START) <= 10 ) or ( cv2.waitKey(1) & 0xFF == ord('q') ) ):
 
-            cv2.imshow('Recording Software', frame)
-            
-            out.write(frame)
+            ret, frame = cap.read()
 
-            if( cv2.waitKey(1) & 0xFF == ord('q') ):
+            if(ret): 
+
+                cv2.imshow('Recording Software', frame)
+                
+                out.write(frame)
+
+            else:
+
                 break
 
-        else:
+            END = time.time()
 
-            break
+        print(f'Vídeo {FILENAME} salvo com sucesso!')
 
     cap.release()
 
